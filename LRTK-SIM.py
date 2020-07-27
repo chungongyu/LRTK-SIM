@@ -31,6 +31,7 @@ class Short_reads_PE(object):
          self.qual2=qual2
          self.start2=start2
          self.end2=end2
+         self.barcode=None
 class Short_reads(object):
     def __init__(self,seq,qual):
         self.seq=seq
@@ -63,57 +64,57 @@ def input_parameter(argv,parameter_struc):
         Par=line.split('=')
         if len(Par)==2:
            if Par[0]=='Path_Fastahap1':
-              parameter_struc.Fastahap1=Par[1].strip('\n')
+              parameter_struc.Fastahap1=Par[1].strip()
            elif Par[0]=='Path_Fastahap2':
-              parameter_struc.Fastahap2=Par[1].strip('\n')
+              parameter_struc.Fastahap2=Par[1].strip()
            elif Par[0]=='Path_adundance':
-              parameter_struc.redundance=Par[1].strip('\n')
+              parameter_struc.redundance=Par[1].strip()
            elif Par[0]=='Fast_mode':
-              parameter_struc.Fast_mode=Par[1].strip('\n')
+              parameter_struc.Fast_mode=Par[1].strip()
            elif Par[0]=='processors':
-              parameter_struc.processor=Par[1].strip('\n')
+              parameter_struc.processor=Par[1].strip()
            elif Par[0]=='Seq_error':
-              parameter_struc.Seq_error=Par[1].strip('\n')
+              parameter_struc.Seq_error=Par[1].strip()
            elif Par[0]=='Error_rate':
-              parameter_struc.Error_rate=float(Par[1].strip('\n'))
+              parameter_struc.Error_rate=float(Par[1].strip())
            elif Par[0]=='Path_Seq_qual':
-              parameter_struc.Seq_qual=Par[1].strip('\n')
+              parameter_struc.Seq_qual=Par[1].strip()
            elif Par[0]=='Path_Barcode_qual':
-              parameter_struc.Barcode_qual=Par[1].strip('\n')
+              parameter_struc.Barcode_qual=Par[1].strip()
            elif Par[0]=='CF':
-              parameter_struc.CF=float(Par[1].strip('\n'))
+              parameter_struc.CF=float(Par[1].strip())
            elif Par[0]=='Mu_IS':
-              parameter_struc.Mu_IS=float(Par[1].strip('\n'))
+              parameter_struc.Mu_IS=float(Par[1].strip())
            elif Par[0]=='Std_IS':
-              parameter_struc.Std_IS=float(Par[1].strip('\n'))
+              parameter_struc.Std_IS=float(Par[1].strip())
            elif Par[0]=='CR':
-              parameter_struc.CR=float(Par[1].strip('\n'))
+              parameter_struc.CR=float(Par[1].strip())
            elif Par[0]=='N_FP':
-              parameter_struc.N_FP=int(Par[1].strip('\n'))
+              parameter_struc.N_FP=int(Par[1].strip())
            elif Par[0]=='Mu_F':
-              parameter_struc.Mu_F=float(Par[1].strip('\n'))
+              parameter_struc.Mu_F=float(Par[1].strip())
            elif Par[0]=='SR':
-              parameter_struc.SR=int(Par[1].strip('\n'))
+              parameter_struc.SR=int(Par[1].strip())
            elif Par[0]=='Path_barcodepool':
-              parameter_struc.barcodepool=Par[1].strip('\n')
+              parameter_struc.barcodepool=Par[1].strip()
            elif Par[0]=='Hap':
-              parameter_struc.hap=int(Par[1].strip('\n'))
+              parameter_struc.hap=int(Par[1].strip())
     f.close()
    
 
     if parameter_struc.hap==1:
        #print(os.path.isfile(parameter_struc.Fastahap1))
-       if os.path.isfile(parameter_struc.Fastahap1)==False:
+       if not os.path.isfile(parameter_struc.Fastahap1):
           deter=0
-          print('template fasta file (Fasta) does not exist')
+          print('template fasta file (Fasta) does not exist: %s' % parameter_struc.Fastahap1)
        if parameter_struc.Fastahap1=='N':
           deter=0
           print('Missing template fasta file (Fasta)')
     if parameter_struc.hap==2:
-       if os.path.isfile(parameter_struc.Fastahap1)==False:
+       if not os.path.isfile(parameter_struc.Fastahap1):
           deter=0
           print('template haplotype1 fasta file (Fasta) does not exist')
-       if os.path.isfile(parameter_struc.Fastahap2)==False:
+       if not os.path.isfile(parameter_struc.Fastahap2):
           deter=0
           print('template haplotype2 fasta file (Fasta) does not exist')
        if parameter_struc.Fastahap1=='N':
@@ -461,6 +462,8 @@ def SIMSR(start,end,Par,lib,jobid):
             if read1N.count('N')>(Par.SR-23)*0.1 or read2seq.count('N')>Par.SR*0.1:
                continue
             readname='@ST-K00126:'+str(i+1)+':H5W53BBXX:'+str(MolSet_cand[i].start)+':'+str(MolSet_cand[i].end)+':'+str(Totalreads[j].start1)+':'+str(Totalreads[j].end1)
+            if Totalreads[j].barcode is not None:
+                readname = '%s BX:Z:%s' % (readname, Totalreads[j].barcode)
             f_reads1.write((readname+' 1:N:0\n').encode('utf-8'))
             f_reads1.write((read1seq+'\n').encode('utf-8'))
             f_reads1.write(('+\n').encode('utf-8'))
@@ -491,7 +494,8 @@ def pairend(Par,insert_size,MolSetX,Barcode_rand_qual,Seq_rand_qual1,Seq_rand_qu
     read2qual=''
     if Par.Fast_mode=='N':
        if Par.Seq_error=='N':
-          read1seq=MolSetX.barcode+'NNNNNNN'+read1
+          #read1seq=MolSetX.barcode+'NNNNNNN'+read1
+          read1seq=read1
           read2seq=read2
        if Par.Seq_error=='Y':
           readerror1=np.random.choice([0,1],p=[1-Par.Error_rate,Par.Error_rate],size=(Par.SR-23))
@@ -525,17 +529,21 @@ def pairend(Par,insert_size,MolSetX,Barcode_rand_qual,Seq_rand_qual1,Seq_rand_qu
                elif read2[i]=='N':
                   rand_nuc=np.random.choice(['A','C','G','T'],1,p=np.asarray([0.25,0.25,0.25,0.25]))
                read2new[i]=rand_nuc[0]
-          read1seq=MolSetX.barcode+'NNNNNNN'+''.join(read1new)
+          #read1seq=MolSetX.barcode+'NNNNNNN'+''.join(read1new)
+          read1seq=''.join(read1new)
           read2seq=''.join(read2new)
 
        read1qual=''.join(map(chr,Barcode_rand_qual[index,:]))+'KKKKKKK'+''.join(map(chr,Seq_rand_qual1[index,23:Par.SR]))
        read2qual=''.join(map(chr,Seq_rand_qual2[index,:]))
     else:
-       read1seq=MolSetX.barcode+'NNNNNNN'+read1
+       #read1seq=MolSetX.barcode+'NNNNNNN'+read1
+       read1seq=read1
        read2seq=read2
        read1qual='K'*Par.SR
        read2qual='K'*Par.SR
-    return Short_reads_PE(read1seq,read1qual,start_for,end_for,read2seq,read2qual,start_rev,end_rev)
+    pe_read = Short_reads_PE(read1seq,read1qual,start_for,end_for,read2seq,read2qual,start_rev,end_rev)
+    pe_read.barcode = MolSetX.barcode
+    return pe_read
 def helpinfo():
     helpinfo=\
     '''
