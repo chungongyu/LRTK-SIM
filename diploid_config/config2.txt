@@ -6,7 +6,7 @@ processors=50
 # coverage for long fragment
 CF=100
 # coverage for short reads
-CR=0.1
+CR=0.25
 # the average number of molecules for each droplet
 N_FP=16
 # the average length for long fragment (Kb)
@@ -14,9 +14,9 @@ Mu_F=20
 # length of short reads (bp)
 SR=151
 # fast mode ('Y' or 'N'; only simulate uniform sequencing quality)
-Fast_mode=N
+Fast_mode=Y
 # simulate sequencing error ('Y') or not ('N')
-Seq_error=Y
+Seq_error=N
 # sequencing error rate
 Error_rate=0.01
 #path to sequencing error profile

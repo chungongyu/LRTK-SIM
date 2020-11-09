@@ -486,7 +486,8 @@ def pairend(Par,insert_size,MolSetX,Barcode_rand_qual,Seq_rand_qual1,Seq_rand_qu
     start_rev=MolSetX.length-end_for
     end_rev=start_rev+int(is_read)
     reverse_seq=All_reverse[start_rev:end_rev]
-    read1=forward_seq[23:Par.SR]
+    #read1=forward_seq[23:Par.SR]
+    read1=forward_seq[0:Par.SR]
     read2=reverse_seq[0:Par.SR]
     read1seq=''
     read2seq=''

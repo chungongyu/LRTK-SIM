@@ -6,7 +6,7 @@ processors=50
 # coverage for long fragment
 CF=15
 # coverage for short reads
-CR=0.2
+CR=0.35
 # the average number of molecules for each droplet
 N_FP=16
 # the average length for long fragment (Kb)
